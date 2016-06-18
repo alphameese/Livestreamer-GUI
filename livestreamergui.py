@@ -50,19 +50,20 @@ class LivestreamerGUI(QWidget):
 		print(favorite_stream)
 		s_quality = (self.quality_button_group.checkedButton().text()).lower()
 		if not stream:
+			self.close()
 			os.system("livestreamer twitch.tv/{0} {1}".format(favorite_stream, s_quality))
 		else:
 			temp = [stream]
-			temp += self.favorites
-			self.favorites = temp
-			self.favorites[0], self.favorites[1] = self.favorites[1], self.favorites[0]
-			print(self.favorites)
+			if not stream in self.favorites:
+				temp += self.favorites
+				self.favorites = temp
+				self.favorites[0], self.favorites[1] = self.favorites[1], self.favorites[0]
 			if len(self.favorites) > 5:
 				self.favorites.pop()
 			with open("save.p", "wb") as f:
 				pickle.dump(self.favorites, f)
-			os.system("livestreamer twitch.tv/{0} {1}".format(stream, s_quality))
-		self.close()
+			self.close()
+			os.system("livestreamer twitch.tv/{0} {1}".format(stream, s_quality))	
 
 if __name__ == '__main__':
 	 
