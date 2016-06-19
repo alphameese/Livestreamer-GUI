@@ -13,10 +13,9 @@ class LivestreamerGUI(QWidget):
 		quality[0].setChecked(True)
 		
 		self.recent_streams = ["Recently watched"]
-		if len(self.recent_streams) < 2:
-			if os.path.exists("save.p"):
-				with open("save.p", "rb") as f:
-					self.recent_streams = pickle.load(f)
+		if os.path.exists("save.p"):
+			with open("save.p", "rb") as f:
+				self.recent_streams = pickle.load(f)
 
 		self.btn = QPushButton('Open Stream', self)
 		self.btn.clicked.connect(self.open_stream)
@@ -50,20 +49,16 @@ class LivestreamerGUI(QWidget):
 		s_quality = (self.quality_button_group.checkedButton().text()).lower()
 		if not stream:
 			self.recent_streams.remove(recent_stream)
-			temp = [recent_stream]
-			temp += self.recent_streams
-			self.recent_streams = temp
-			self.recent_streams[0], self.recent_streams[1] = self.recent_streams[1], self.recent_streams[0]
+			self.recent_streams.insert(1, recent_stream)
 			with open("save.p", "wb") as f:
 				pickle.dump(self.recent_streams, f)
 			self.close()
 			os.system("livestreamer twitch.tv/{0} {1}".format(recent_stream, s_quality))
 		else:
 			temp = [stream]
-			if not stream in self.recent_streams:
-				temp += self.recent_streams
-				self.recent_streams = temp
-				self.recent_streams[0], self.recent_streams[1] = self.recent_streams[1], self.recent_streams[0]
+			if stream in self.recent_streams:
+				self.recent_streams.remove(stream)
+			self.recent_streams.insert(1, stream)
 			if len(self.recent_streams) > 5:
 				self.recent_streams.pop()
 			with open("save.p", "wb") as f:
