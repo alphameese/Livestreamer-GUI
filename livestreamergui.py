@@ -12,11 +12,11 @@ class LivestreamerGUI(QWidget):
 		quality = [QRadioButton("Source"), QRadioButton("High"), QRadioButton("Medium"), QRadioButton("Low"), QRadioButton("Mobile")]
 		quality[0].setChecked(True)
 		
-		self.favorites = ["Choose a favorite"]
-		if len(self.favorites) < 2:
+		self.recent_streams = ["Recently watched"]
+		if len(self.recent_streams) < 2:
 			if os.path.exists("save.p"):
 				with open("save.p", "rb") as f:
-					self.favorites = pickle.load(f)
+					self.recent_streams = pickle.load(f)
 
 		self.btn = QPushButton('Open Stream', self)
 		self.btn.clicked.connect(self.open_stream)
@@ -33,8 +33,8 @@ class LivestreamerGUI(QWidget):
 			self.quality_button_group.addButton(quality[i], i)
 
 		self.comboBox = QComboBox()
-		for i in range(len(self.favorites)):
-			self.comboBox.addItem(self.favorites[i])
+		for i in range(len(self.recent_streams)):
+			self.comboBox.addItem(self.recent_streams[i])
 
 		button_layout.addWidget(self.comboBox)
 		button_layout.addWidget(self.le)
@@ -46,22 +46,28 @@ class LivestreamerGUI(QWidget):
 
 	def open_stream(self):
 		stream = self.le.text()
-		favorite_stream = self.comboBox.currentText()
-		print(favorite_stream)
+		recent_stream = self.comboBox.currentText()
 		s_quality = (self.quality_button_group.checkedButton().text()).lower()
 		if not stream:
+			self.recent_streams.remove(recent_stream)
+			temp = [recent_stream]
+			temp += self.recent_streams
+			self.recent_streams = temp
+			self.recent_streams[0], self.recent_streams[1] = self.recent_streams[1], self.recent_streams[0]
+			with open("save.p", "wb") as f:
+				pickle.dump(self.recent_streams, f)
 			self.close()
-			os.system("livestreamer twitch.tv/{0} {1}".format(favorite_stream, s_quality))
+			os.system("livestreamer twitch.tv/{0} {1}".format(recent_stream, s_quality))
 		else:
 			temp = [stream]
-			if not stream in self.favorites:
-				temp += self.favorites
-				self.favorites = temp
-				self.favorites[0], self.favorites[1] = self.favorites[1], self.favorites[0]
-			if len(self.favorites) > 5:
-				self.favorites.pop()
+			if not stream in self.recent_streams:
+				temp += self.recent_streams
+				self.recent_streams = temp
+				self.recent_streams[0], self.recent_streams[1] = self.recent_streams[1], self.recent_streams[0]
+			if len(self.recent_streams) > 5:
+				self.recent_streams.pop()
 			with open("save.p", "wb") as f:
-				pickle.dump(self.favorites, f)
+				pickle.dump(self.recent_streams, f)
 			self.close()
 			os.system("livestreamer twitch.tv/{0} {1}".format(stream, s_quality))	
 
