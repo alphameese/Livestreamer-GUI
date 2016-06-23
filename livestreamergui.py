@@ -46,15 +46,8 @@ class LivestreamerGUI(QWidget):
 	def open_stream(self):
 		stream = self.le.text()
 		recent_stream = self.comboBox.currentText()
-		s_quality = (self.quality_button_group.checkedButton().text()).lower()
-		if not stream:
-			self.recent_streams.remove(recent_stream)
-			self.recent_streams.insert(1, recent_stream)
-			with open("save.p", "wb") as f:
-				pickle.dump(self.recent_streams, f)
-			self.close()
-			os.system("livestreamer twitch.tv/{0} {1}".format(recent_stream, s_quality))
-		else:
+		s_quality = self.quality_button_group.checkedButton().text().lower()
+		if stream:
 			temp = [stream]
 			if stream in self.recent_streams:
 				self.recent_streams.remove(stream)
@@ -64,7 +57,14 @@ class LivestreamerGUI(QWidget):
 			with open("save.p", "wb") as f:
 				pickle.dump(self.recent_streams, f)
 			self.close()
-			os.system("livestreamer twitch.tv/{0} {1}".format(stream, s_quality))	
+			os.system("livestreamer twitch.tv/{0} {1}".format(stream, s_quality))
+		else:
+			self.recent_streams.remove(recent_stream)
+			self.recent_streams.insert(1, recent_stream)
+			with open("save.p", "wb") as f:
+				pickle.dump(self.recent_streams, f)
+			self.close()
+			os.system("livestreamer twitch.tv/{0} {1}".format(recent_stream, s_quality))
 
 if __name__ == '__main__':
 	 
